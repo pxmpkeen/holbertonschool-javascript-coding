@@ -1,22 +1,25 @@
 #!/usr/bin/node
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import request from 'request';
+const request = require('request');
+const urlApi = process.argv[2];
 
-request(process.argv[2], (err, response, body) => {
-  if (err) throw err;
-  // eslint-disable-next-line no-param-reassign
-  body = JSON.parse(body);
+request(urlApi, function (error, response, body) {
+  if (error) {
+    console.log(error);
+  } else {
+    const jsonObj = JSON.parse(body);
+    const newDict = {};
+    let key = '';
 
-  let result = body.reduce((x, y) => {
-    // eslint-disable-next-line no-param-reassign
-    if (!x[y.userId]) x[y.userId] = 0;
-    // eslint-disable-next-line no-param-reassign
-    if (y.completed) x[y.userId] += 1;
-    return x;
-  }, {});
+    for (let i = 0; i < jsonObj.length; i++) {
+      key = jsonObj[i].userId.toString();
+      if (!newDict[key] && jsonObj[i].completed) {
+        newDict[key] = 1;
+      } else if (jsonObj[i].completed) {
+        newDict[key]++;
+      }
+    }
 
-  result = Object.fromEntries(Object.entries(result).filter(([, value]) => value > 0));
-
-  console.log(result);
+    console.log(newDict);
+  }
 });
